@@ -1,0 +1,17 @@
+# Sky View Factor (SVF) derived from fish-eye photographs using SOLWEIG 1D,,,
+site no,site name,filename,svf
+route forum,,,
+1,forum,IMG_7194_SVF.JPG,0.915
+2,einsteinpark,IMG_7201_SVF.JPG,0.829
+3,kekulepark,IMG_7207_SVF.JPG,0.414
+4,rudower south,IMG_7214_SVF.JPG,0.63
+4a,rudower south shelter,IMG_7234_SVF.JPG,0.016
+5,rudower north,IMG_7220_SVF.JPG,0.619
+5a,rudower north shelter,IMG_7228_SVF.JPG,0.001
+route park,,,
+1,workoutpark,IMG_7272_SVF.JPG,0.938
+2,courtyard,IMG_7265_SVF.JPG,0.642
+2a,courtyard tree,IMG_7259_SVF.JPG,0.1
+3,karl-ziegler east,IMG_7252SVF.JPG,0.483
+4,karl-ziegler west,IMG_7246_SVF.JPG,0.577
+5,skatepark,IMG_7282_SVF.JPG,0.955
