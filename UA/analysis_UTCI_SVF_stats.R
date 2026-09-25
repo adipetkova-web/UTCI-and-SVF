@@ -97,10 +97,11 @@ d <- d %>%
     local_time = with_tz(time_mid, tz_local),
     t_local    = hour(local_time) + minute(local_time) / 60,   # decimal local hour
     hour_f     = factor(format(with_tz(hour, tz_local), "%H")),
-    period     = case_when(t_local  <  5   ~ "night",
-                           t_local  <  11  ~ "morning",
-                           t_local  <  15  ~ "midday",
-                           TRUE            ~ "afternoon"),
+    period = case_when(
+              t_local >= 5  & t_local < 11 ~ "morning",
+              t_local >= 11 & t_local < 16 ~ "midday",
+              t_local >= 16 & t_local < 22 ~ "afternoon",
+              TRUE                         ~ "night"),
     period     = factor(period, levels = c("morning", "midday", "afternoon", "night")),
     Tmrt       = calc_tmrt(Globe.Temp, Temp, Wind.Speed),
     ws_utci    = if (clip_wind_utci) pmax(Wind.Speed, ws_min) else Wind.Speed,
