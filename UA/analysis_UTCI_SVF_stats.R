@@ -82,21 +82,6 @@ d <- bind_rows(
   env_forum$model_data2 %>% left_join(mean_times(env_forum), by = c("site.name", "hour")) %>% mutate(route = "forum")
 )
 
-# Solar position (NOAA simplified algorithm), time in UTC
-solar_elevation <- function(time_utc, lat, lon) {
-  doy  <- yday(time_utc)
-  hr   <- hour(time_utc) + minute(time_utc) / 60 + second(time_utc) / 3600
-  g    <- 2 * pi / 365 * (doy - 1 + (hr - 12) / 24)
-  eqt  <- 229.18 * (0.000075 + 0.001868 * cos(g) - 0.032077 * sin(g) -
-                      0.014615 * cos(2 * g) - 0.040849 * sin(2 * g))
-  decl <- 0.006918 - 0.399912 * cos(g) + 0.070257 * sin(g) - 0.006758 * cos(2 * g) +
-    0.000907 * sin(2 * g) - 0.002697 * cos(3 * g) + 0.00148 * sin(3 * g)
-  tst  <- hr * 60 + eqt + 4 * lon              # true solar time [min]
-  ha   <- (tst / 4 - 180) * pi / 180
-  phi  <- lat * pi / 180
-  asin(sin(phi) * sin(decl) + cos(phi) * cos(decl) * cos(ha)) * 180 / pi
-}
-
 calc_tmrt <- function(Tg, Ta, Va, D = globe_D, epsilon = globe_eps) {
   ((Tg + 273.15)^4 + (1.1e8 * Va^0.6 / (epsilon * D^0.4)) * (Tg - Ta))^0.25 - 273.15
 }
@@ -112,10 +97,9 @@ d <- d %>%
     local_time = with_tz(time_mid, tz_local),
     t_local    = hour(local_time) + minute(local_time) / 60,   # decimal local hour
     hour_f     = factor(format(with_tz(hour, tz_local), "%H")),
-    sun_elev   = solar_elevation(time_mid, lat, lon),
-    period     = case_when(sun_elev <= 0   ~ "night",
-                           t_local  <  10  ~ "morning",
-                           t_local  <  16  ~ "midday",
+    period     = case_when(t_local  <  5   ~ "night",
+                           t_local  <  11  ~ "morning",
+                           t_local  <  15  ~ "midday",
                            TRUE            ~ "afternoon"),
     period     = factor(period, levels = c("morning", "midday", "afternoon", "night")),
     Tmrt       = calc_tmrt(Globe.Temp, Temp, Wind.Speed),
