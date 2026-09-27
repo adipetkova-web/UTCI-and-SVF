@@ -58,6 +58,11 @@ globe_eps <- 0.95
 # 0 m/s below its stall speed, so the 10-m wind is clipped at 0.5 m/s.
 clip_wind_utci <- TRUE
 
+# The campaign targeted daytime conditions; the few site-hours after sunset
+# (21:13 CEST) are not relevant for the radiative effect of SVF on UTCI.
+# TRUE drops the "night" period from all analyses; FALSE keeps all hours.
+exclude_night <- TRUE
+
 set.seed(42)
 
 #### 0 data preparation ####
@@ -108,6 +113,8 @@ d <- d %>%
     D_Tmrt     = Tmrt - Temp
   ) %>%
   filter(!is.na(UTCI), !is.na(svf)) %>%
+  filter(!(exclude_night & period == "night")) %>%
+  droplevels() %>%
   group_by(hour) %>%
   # anomaly relative to the mean of all sites measured in the same hour:
   # removes the common weather signal
@@ -140,7 +147,6 @@ site_table <- d %>%
   summarise(n = n(),
             UTCI_mean = mean(UTCI), UTCI_min = min(UTCI), UTCI_max = max(UTCI),
             UTCI_anom_mean = mean(UTCI_anom),
-            UTCI_anom_day = mean(UTCI_anom[period != "night"]),
             Tmrt_mean = mean(Tmrt), Ta_mean = mean(Temp), ws_mean = mean(Wind.Speed),
             .groups = "drop") %>%
   arrange(svf) %>%
@@ -164,15 +170,15 @@ perm_test_r <- function(x, y, n_perm = 9999) {
   c(r = r_obs, p_perm = (sum(abs(r_perm) >= abs(r_obs)) + 1) / (n_perm + 1))
 }
 # mean UTCI anomaly (to the hourly all-site mean) per site, for the whole
-# campaign, daytime only and for each period of the day
+# campaign and for each period of the day
+all_label <- if (exclude_night) "all daytime hours" else "all hours"
 site_period <- bind_rows(
-  d %>% mutate(subset = "all hours"),
-  d %>% filter(period != "night") %>% mutate(subset = "daytime"),
+  d %>% mutate(subset = all_label),
   d %>% mutate(subset = as.character(period))
 ) %>%
   group_by(subset, site, svf) %>%
   summarise(UTCI_anom = mean(UTCI_anom), .groups = "drop")
-subsets <- c("all hours", "daytime", levels(d$period))
+subsets <- c(all_label, levels(d$period))
 site_level <- bind_rows(lapply(subsets, function(v) {
   g  <- filter(site_period, subset == v)
   y  <- g$UTCI_anom; x <- g$svf
