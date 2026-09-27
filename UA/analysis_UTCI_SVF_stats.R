@@ -242,7 +242,8 @@ hourly_reg <- function(data, response) {
       ci  <- confint(fit)["svf", ]
       sp  <- suppressWarnings(cor.test(g$svf, g[[response]], method = "spearman"))
       tibble(n = nrow(g),
-             local_time = with_tz(key$hour, tz_local) + 30 * 60,
+             local_time = with_tz(key$hour, tz_local),   # start of the hour, for plotting
+             t_mean = mean(g$t_local),                    # mean actual measurement time
              sun_elev = mean(g$sun_elev),
              slope = coef(fit)[["svf"]] / 10,          # per 0.1 SVF
              lwr = ci[[1]] / 10, upr = ci[[2]] / 10,
@@ -341,12 +342,12 @@ p3c <- ggplot(gam_curve, aes(t_local, slope)) +
   geom_hline(yintercept = 0, colour = "grey50") +
   geom_ribbon(aes(ymin = lwr, ymax = upr), fill = "#2a78d6", alpha = 0.15) +
   geom_line(colour = "#2a78d6", linewidth = 0.8) +
-  geom_point(data = hr_utci %>% mutate(t_local = hour(local_time) + minute(local_time) / 60),
+  geom_point(data = hr_utci %>% mutate(t_local = t_mean),
              colour = "grey40", size = 1.8) +
   scale_x_continuous(breaks = seq(4, 24, 2)) +
   labs(x = "Local time (h, CEST)", y = "Change in UTCI per +0.1 SVF (K)",
        title = "Time-varying SVF effect on UTCI (GAM, 95% CI)",
-       subtitle = "Line: GAM estimate; grey points: hour-by-hour regressions")
+       subtitle = "Line: GAM estimate; grey points: hour-by-hour regressions at mean measurement time")
 save_plot(p3c, "03c_gam_time_varying_svf_effect.png")
 
 #### 4 mechanism: which UTCI input does SVF act on? ####
