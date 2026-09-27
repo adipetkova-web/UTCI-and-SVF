@@ -25,7 +25,8 @@
 #'   0  data preparation (re-uses analysis_UA.R and analysis_forum.R)
 #'   1  descriptives
 #'   2  H1 - is there a relationship at all?
-#'        2a site-level correlation + permutation test (n = 10)
+#'        2a site-level correlation + permutation test (n = 10),
+#'           H1 scatter and site x hour heatmap of the UTCI anomaly
 #'        2b linear mixed model UTCI ~ SVF + route + hour + (1 | site)
 #'   3  H2 - how does it change over the day?
 #'        3a hour-by-hour cross-sectional regressions (n = 10 per hour)
@@ -204,6 +205,52 @@ p2a <- ggplot(filter(site_period, subset %in% levels(d$period)) %>%
   labs(x = "Sky view factor", y = "Mean UTCI anomaly (K)",
        title = "Site-mean UTCI anomaly vs SVF by period of the day (n = 10 sites)")
 save_plot(p2a, "02a_site_level_by_period.png", w = 11, h = 4)
+
+# H1 figure: one point per site, labelled, with the site-level test result
+h1_data <- filter(site_period, subset == all_label) %>%
+  left_join(distinct(d, site, route), by = "site")
+h1_stats <- filter(site_level, subset == all_label)
+site_labels <- if (requireNamespace("ggrepel", quietly = TRUE)) {
+  ggrepel::geom_text_repel(aes(label = site), size = 3.3, colour = "grey25",
+                           box.padding = 0.4, min.segment.length = 0.3, seed = 1)
+} else {
+  geom_text(aes(label = site), size = 3.3, colour = "grey25", vjust = -0.9)
+}
+p2a_h1 <- ggplot(h1_data, aes(svf, UTCI_anom)) +
+  geom_hline(yintercept = 0, colour = "grey50") +
+  geom_smooth(method = "lm", formula = y ~ x, colour = "#2a78d6", fill = "#2a78d6",
+              alpha = 0.15, linewidth = 0.7) +
+  geom_point(aes(shape = route), colour = "#0d366b", size = 3) +
+  site_labels +
+  scale_shape_manual(values = c(forum = 16, park = 17), name = "Route") +
+  labs(x = "Sky view factor", y = "Mean UTCI anomaly (K)",
+       title = "Site-mean UTCI anomaly vs sky view factor",
+       subtitle = sprintf("%s, n = 10 sites\nr = %.2f, permutation p = %.3f, slope = %+.2f K per 0.1 SVF",
+                          all_label, h1_stats$pearson_r, h1_stats$p_permutation,
+                          h1_stats$slope_per_0.1SVF))
+save_plot(p2a_h1, "02a_h1_site_mean_vs_svf.png", w = 7, h = 5)
+
+# Heatmap: UTCI anomaly per site (ordered by SVF) and hour
+heat_data <- d %>%
+  mutate(hour_local = as.integer(format(with_tz(hour, tz_local), "%H")),
+         site_lab = factor(sprintf("%s (%.2f)", site, svf)),
+         site_lab = reorder(site_lab, svf))
+lim <- max(abs(heat_data$UTCI_anom))
+period_breaks <- c(11, 16, 21) - 0.5          # period boundaries between hour columns
+p_heat <- ggplot(heat_data, aes(hour_local, site_lab, fill = UTCI_anom)) +
+  geom_tile(colour = "white", linewidth = 0.6) +
+  geom_vline(xintercept = period_breaks[period_breaks < max(heat_data$hour_local) + 0.5],
+             colour = "grey30", linetype = "dashed", linewidth = 0.4) +
+  scale_fill_gradient2(low = "#2a78d6", mid = "#f0efec", high = "#e34948",
+                       midpoint = 0, limits = c(-lim, lim),
+                       name = "UTCI anomaly (K)") +
+  scale_x_continuous(breaks = seq(5, 23, 1), expand = c(0, 0)) +
+  labs(x = "Local time (h, CEST)", y = "Site (SVF), ordered by SVF",
+       title = "UTCI anomaly relative to the hourly mean of all sites",
+       subtitle = paste("Red = warmer than average, blue = cooler; white = no measurement;",
+                         "dashed lines = period boundaries", sep = "\n")) +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
+save_plot(p_heat, "02b_heatmap_utci_anomaly.png", w = 10, h = 5)
 
 cat("\n==== 2b LINEAR MIXED MODEL: UTCI ~ SVF + route + hour + (1|site), AR(1) ====\n")
 # hour_f absorbs the shared weather; the SVF effect is tested against the
