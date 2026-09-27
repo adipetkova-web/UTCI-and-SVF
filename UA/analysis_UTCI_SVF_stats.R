@@ -47,7 +47,6 @@ out_dir <- "output"
 dir.create(out_dir, showWarnings = FALSE)
 
 tz_local <- "Europe/Berlin"        # UTC+2 (CEST) during the campaign
-lat <- 52.433; lon <- 13.528       # centre of the two routes (protocol)
 
 # Globe diameter [m] used for Tmrt. analysis_UA.R uses 0.15 m (ISO 7726
 # standard globe). The Kestrel 5400 globe is a 1-inch (0.0254 m) globe, so
@@ -229,7 +228,6 @@ hourly_reg <- function(data, response) {
       tibble(n = nrow(g),
              local_time = with_tz(key$hour, tz_local),   # start of the hour, for plotting
              t_mean = mean(g$t_local),                    # mean actual measurement time
-             sun_elev = mean(g$sun_elev),
              slope = coef(fit)[["svf"]] / 10,          # per 0.1 SVF
              lwr = ci[[1]] / 10, upr = ci[[2]] / 10,
              r = cor(g$svf, g[[response]]),
@@ -242,7 +240,6 @@ hourly_reg <- function(data, response) {
 }
 hr_utci <- hourly_reg(d, "UTCI")
 print(as.data.frame(hr_utci %>% transmute(local = format(local_time, "%H:%M"), n,
-                                          sun_elev = round(sun_elev, 1),
                                           slope = round(slope, 2), lwr = round(lwr, 2),
                                           upr = round(upr, 2), r = round(r, 2),
                                           p = signif(p, 2), p_BH = signif(p_BH, 2),
