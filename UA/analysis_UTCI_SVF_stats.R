@@ -99,7 +99,7 @@ d <- d %>%
     period = case_when(
               t_local >= 5  & t_local < 11 ~ "morning",
               t_local >= 11 & t_local < 16 ~ "midday",
-              t_local >= 16 & t_local < 22 ~ "afternoon",
+              t_local >= 16 & t_local < 21 ~ "afternoon",
               TRUE                         ~ "night"),
     period     = factor(period, levels = c("morning", "midday", "afternoon", "night")),
     Tmrt       = calc_tmrt(Globe.Temp, Temp, Wind.Speed),
