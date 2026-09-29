@@ -37,7 +37,7 @@ tz_local <- "Europe/Berlin"        # UTC+2 (CEST) during the campaign
 # Globe diameter [m] used for Tmrt. analysis_UA.R uses 0.15 m (ISO 7726
 # standard globe). The Kestrel 5400 globe is a 1-inch (0.0254 m) globe, so
 # check which value is correct for your instrument - it changes Tmrt a lot.
-globe_D <- 0.15
+globe_D <- 0.0254
 globe_eps <- 0.95
 
 # UTCI is only defined for 10-m wind speeds >= 0.5 m/s. The Kestrel reports
