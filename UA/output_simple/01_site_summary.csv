@@ -1,0 +1,11 @@
+"route","site","svf","n_hours","UTCI_mean","UTCI_min","UTCI_max","UTCI_anom_mean"
+"forum","kekulepark",0.41,16,23.11,11.2,30.3,-3.29
+"park","karl-ziegler east",0.48,16,26.54,11.4,37,0.13
+"park","karl-ziegler west",0.58,15,24.56,10.6,32.7,-1.87
+"forum","rudower north",0.62,15,27.81,16.5,34.9,1.79
+"forum","rudower south",0.63,15,22.51,12.4,31.8,-3.99
+"park","courtyard",0.64,16,26.99,10.4,36.6,0.58
+"forum","einsteinpark",0.83,15,28.07,10.8,36.6,1.98
+"forum","forum",0.92,16,27.35,12,36.1,0.95
+"park","workoutpark",0.94,16,28.46,7.8,37.2,2.05
+"park","skatepark",0.96,15,27.77,10.4,35.1,1.63
